@@ -1,7 +1,7 @@
 import inkex, cubicsuperpath, simplepath, simplestyle, cspsubdiv
 from simpletransform import *
 from bezmisc import *
-import entities
+from .entities import PolyLine
 from math import radians
 import sys, pprint
 
@@ -17,6 +17,9 @@ def parseLengthWithUnits( str ):
   s = str.strip()
   if s[-2:] == 'px':
     s = s[:-2]
+  if s[-2:] == 'mm':
+    s = s[:-2]
+    u = 'mm'
   elif s[-1:] == '%':
     u = '%'
     s = s[:-1]
@@ -69,7 +72,7 @@ class SvgIgnoredEntity:
     #context.codes.append("")
     return
 
-class SvgPath(entities.PolyLine):
+class SvgPath(PolyLine):
   def load(self, node, mat):
     d = node.get('d')
     if len(simplepath.parsePath(d)) == 0:
@@ -162,7 +165,7 @@ class SvgEllipse(SvgPath):
     newpath = self.new_path_from_node(node)
     newpath.set('d',d)
     return newpath
-  
+
 class SvgCircle(SvgEllipse):
   def load(self, node,mat):
     rx = float(node.get('r','0'))
@@ -170,7 +173,7 @@ class SvgCircle(SvgEllipse):
 
 class SvgText(SvgIgnoredEntity):
   def load(self,node,mat):
-    inkex.errormsg('Warning: unable to draw text. please convert it to a path first.')
+    inkex.errormsg(f'Warning: unable to draw text. please convert it to a path first n: {node} m:{mat}.')
     SvgIgnoredEntity.load(self,node,mat)
 
 class SvgLayerChange():
@@ -212,14 +215,15 @@ class SvgParser:
     if str:
       v, u = parseLengthWithUnits( str )
       if not v:
-        # Couldn't parse the value
+        inkex.errormsg(f'Couldn\'t parse the value name:{name} str:{str} svg:{self.svg}')
         return None
       elif ( u == '' ) or ( u == 'px' ):
         return v
       elif u == '%':
         return float( default ) * v / 100.0
       else:
-        # Unsupported units
+        inkex.errormsg(f'Unsupported units n:{name} s:{str} u {u}')
+
         return None
     else:
       # No width specified; assume the default value
@@ -232,7 +236,7 @@ class SvgParser:
     self.recursivelyTraverseSvg(self.svg, [[0.28222, 0.0, -(self.svgWidth/2.0)], [0.0, -0.28222, (self.svgHeight/2.0)]])
 
   # TODO: center this thing
-  def recursivelyTraverseSvg(self, nodeList, 
+  def recursivelyTraverseSvg(self, nodeList,
                              matCurrent = [[1.0, 0.0, 0.0], [0.0, -1.0, 0.0]],
                              parent_visibility = 'visible'):
     """
@@ -285,7 +289,7 @@ class SvgParser:
             pass
         else:
           pass
-      elif not isinstance(node.tag, basestring):
+      elif not isinstance(node.tag, str):
         pass
       else:
         entity = self.make_entity(node, matNew)

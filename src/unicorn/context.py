@@ -17,7 +17,7 @@ class GCodeContext:
       self.num_pages = num_pages
       self.continuous = continuous
       self.file = file
-      
+
       self.drawing = False
       self.last = None
 
@@ -101,14 +101,14 @@ class GCodeContext:
         codesets.append(self.loop_forever)
         for codeset in codesets:
           for line in codeset:
-            print line
+            print(line)
       else:
         for p in range(0,self.num_pages):
           for codeset in codesets:
             for line in codeset:
-              print line
+              print(line)
           for line in self.postscript:
-            print line
+            print(line)
 
     def start(self):
       self.codes.append("M300 S%0.2F (pen down)" % self.pen_down_angle)
@@ -126,13 +126,13 @@ class GCodeContext:
       if stop:
         return
       else:
-        if self.drawing: 
-            self.codes.append("M300 S%0.2F (pen up)" % self.pen_up_angle) 
+        if self.drawing:
+            self.codes.append("M300 S%0.2F (pen up)" % self.pen_up_angle)
             self.codes.append("G4 P%d (wait %dms)" % (self.stop_delay, self.stop_delay))
             self.drawing = False
         self.codes.append("G1 X%.2f Y%.2f F%.2f" % (x,y, self.xy_feedrate))
       self.last = (x,y)
-	
+
     def draw_to_point(self, x, y, stop=False):
       if self.last == (x,y):
           return

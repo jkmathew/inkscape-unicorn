@@ -61,6 +61,6 @@ More Info: http://github.com/martymcguire/inkscape-unicorn/</_param>
     <dataloss>true</dataloss>
   </output>
   <script>
-    <command reldir="extensions" interpreter="python">unicorn.py</command>
+    <command reldir="inx" interpreter="python">unicorn.py</command>
   </script>
 </inkscape-extension>
